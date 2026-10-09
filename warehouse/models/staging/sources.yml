@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: wqp
+    description: >
+      Compact public-domain snapshot of USGS NWIS groundwater results for
+      San Bernardino County, CA, retrieved from the Water Quality Portal and
+      cleaned by the groundwater-audit project. See data/seed/SOURCE.md.
+    meta:
+      # dbt-duckdb reads the CSV directly; no seed load step. Path is relative
+      # to the dbt project directory (warehouse/).
+      external_location: "../data/seed/{name}.csv"
+    tables:
+      - name: wqp_samples
+        columns:
+          - name: result_id
+            data_tests: [not_null, unique]

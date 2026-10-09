@@ -1,0 +1,8 @@
+# Local profile. CI and the Makefile point DBT_PROFILES_DIR here.
+groundwater_bi:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: target/groundwater.duckdb
+      threads: 4

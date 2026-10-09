@@ -1,0 +1,114 @@
+version: 2
+
+# Column `meta` blocks follow the Lightdash convention (meta.dimension /
+# meta.metrics) so the same file can drive a Lightdash explore if you run one.
+# They are harmless to plain dbt.
+
+models:
+  - name: dim_well
+    description: One row per USGS monitoring well in the snapshot.
+    columns:
+      - name: well_key
+        description: USGS monitoring location identifier.
+        data_tests: [unique, not_null]
+      - name: well_name
+      - name: site_type
+      - name: huc8
+        description: Eight-digit hydrologic unit code. Used as the tenant key in the embed demo.
+        data_tests: [not_null]
+      - name: latitude
+      - name: longitude
+      - name: aquifer
+      - name: aquifer_type
+      - name: well_depth_ft
+
+  - name: dim_constituent
+    description: One row per comparable measurement definition (family, characteristic, fraction, unit).
+    columns:
+      - name: constituent_key
+        data_tests: [unique, not_null]
+      - name: family
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [arsenic, nitrate_as_n, no3_no2_as_n]
+      - name: characteristic
+      - name: fraction
+      - name: unit
+
+  - name: fct_result
+    description: One row per laboratory result, with censoring preserved as an interval.
+    meta:
+      joins:
+        - join: dim_well
+          sql_on: ${fct_result.well_key} = ${dim_well.well_key}
+        - join: dim_constituent
+          sql_on: ${fct_result.constituent_key} = ${dim_constituent.constituent_key}
+    columns:
+      - name: result_id
+        data_tests: [unique, not_null]
+        meta:
+          metrics:
+            n_results:
+              type: count
+              label: Results
+      - name: well_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_well')
+                field: well_key
+        meta:
+          metrics:
+            n_wells:
+              type: count_distinct
+              label: Wells sampled
+      - name: constituent_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_constituent')
+                field: constituent_key
+      - name: activity_id
+      - name: activity_type
+      - name: sample_date
+        meta:
+          dimension:
+            time_intervals: [DAY, MONTH, YEAR]
+      - name: sample_year
+      - name: method_id
+      - name: value
+        description: Reported value. For censored rows this is the detection limit, not a measurement.
+        meta:
+          metrics:
+            median_value:
+              type: median
+              label: Median reported value
+            max_value:
+              type: max
+      - name: lower_bound
+      - name: upper_bound
+      - name: detection_limit
+      - name: is_censored
+      - name: is_dnq
+      - name: is_estimated
+      - name: is_dl_missing
+      - name: censored_flag
+        meta:
+          metrics:
+            n_censored:
+              type: sum
+              label: Non-detects
+            pct_censored:
+              type: number
+              label: Share non-detect
+              sql: ${n_censored} / nullif(${n_results}, 0)
+              format: percent
+      - name: dl_missing_flag
+        meta:
+          metrics:
+            n_dl_missing:
+              type: sum
+              label: Results missing a detection limit

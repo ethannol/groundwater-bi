@@ -1,0 +1,30 @@
+# Local embedded-analytics demo: a Postgres copy of the marts plus Metabase
+# open source. Metabase cannot read the DuckDB file directly, so
+# scripts/export_marts_to_postgres.py copies the three mart tables over.
+services:
+  warehouse:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: groundwater
+      POSTGRES_USER: groundwater
+      POSTGRES_PASSWORD: groundwater
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  metabase:
+    # Pin a specific tag before relying on this for anything beyond a demo.
+    image: metabase/metabase:latest
+    ports:
+      - "3000:3000"
+    environment:
+      MB_SITE_URL: http://localhost:3000
+    volumes:
+      - mbdata:/metabase-data
+    depends_on:
+      - warehouse
+
+volumes:
+  pgdata:
+  mbdata:

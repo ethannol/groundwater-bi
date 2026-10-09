@@ -1,0 +1,24 @@
+[project]
+name = "groundwater-bi"
+version = "0.1.0"
+description = "A small metrics stack over public groundwater data: dbt warehouse, LookML semantic layer, embedded dashboard, Hex app."
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "dbt-core>=1.9",
+    "dbt-duckdb>=1.9",
+    "duckdb>=1.1",
+    "lkml>=1.3",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "pyjwt>=2.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "httpx>=0.27"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.uv]
+package = false
