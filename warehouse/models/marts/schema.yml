@@ -82,12 +82,18 @@ models:
       - name: value
         description: Reported value. For censored rows this is the detection limit, not a measurement.
         meta:
+          dimension:
+            hidden: true
+      - name: detected_value
+        description: Measured detections only; excludes non-detects and DNQ. A detected result does not need a reporting limit. This subset median is not the population median.
+        meta:
           metrics:
-            median_value:
+            median_detected_value:
               type: median
-              label: Median reported value
-            max_value:
+              label: Median detected concentration (detected subset)
+            max_detected_value:
               type: max
+              label: Maximum detected concentration
       - name: lower_bound
       - name: upper_bound
       - name: detection_limit
@@ -104,7 +110,7 @@ models:
             pct_censored:
               type: number
               label: Share non-detect
-              sql: ${n_censored} / nullif(${n_results}, 0)
+              sql: 1.0 * ${n_censored} / nullif(${n_results}, 0)
               format: percent
       - name: dl_missing_flag
         meta:

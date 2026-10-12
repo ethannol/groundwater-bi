@@ -1,9 +1,10 @@
 # groundwater-bi
 
 A small, end-to-end metrics stack over public groundwater chemistry data.
-One warehouse, one set of metric definitions, three ways to consume them:
-a Hex notebook app, a Looker-style modeled explore, and a tenant-scoped
-dashboard embedded in a host application.
+One warehouse with censoring-safe default metrics, an offline-validated
+LookML explore and an authenticated tenant-scoped embed host. The Hex app is
+planned; its SQL contract and setup notes are included, but no live app or
+notebook export is claimed.
 
 It exists to back up a specific opinion about deploying BI tooling, written
 up in [docs/deployment-opinion.md](docs/deployment-opinion.md): metric
@@ -21,7 +22,7 @@ warehouse/  dbt + DuckDB         stg_samples → dim_well, dim_constituent, fct_
         │                               validated offline against the built schema
         ├──────────────► embed/         Metabase OSS + FastAPI host minting signed,
         │                               tenant-locked embed URLs
-        └──────────────► hex/           published Community-plan app over the same marts
+        └──────────────► hex/           planned app; SQL contract and setup notes
 ```
 
 ## Quickstart
@@ -44,8 +45,8 @@ For the Hex app (free Hex account plus a hosted Postgres or MotherDuck) see
 | --- | --- |
 | `warehouse/` | dbt project. Source is the CSV read in place by dbt-duckdb. Marts carry Lightdash-style `meta` metric definitions. |
 | `looker/` | LookML model, three views, one explore. No live Looker behind it; `tests/test_lookml.py` keeps it honest. |
-| `embed/` | docker-compose for Postgres + Metabase, and a 100-line FastAPI app that mints signed embed URLs per tenant. |
-| `hex/` | Build notes, exported notebook, and the published app link. |
+| `embed/` | docker-compose for Postgres + Metabase, and a FastAPI host that authenticates demo users, authorizes tenants and mints signed embed URLs. |
+| `hex/` | Planned app, build notes and a censoring-safe SQL contract; no published link/export yet. |
 | `scripts/` | Copies marts from DuckDB into any Postgres so hosted tools can read them. |
 | `docs/` | The deployment opinion and three ADRs. |
 | `data/seed/` | The snapshot and its provenance. |
@@ -64,3 +65,16 @@ dashboard cannot accidentally report a detection limit as a measurement.
 Hex's git export, a live Looker instance, and interactive embedding are all
 paid features. The repository shows what the free tiers allow and says
 exactly where the line is in [docs/adr/0003](docs/adr/0003-what-the-free-tiers-do-not-show.md).
+
+## Metric and authorization contract
+
+`detected_value` is null for non-detects and DNQ. Detected measurements do not
+need a reporting limit and remain included even if the limit is absent. Default
+concentration aggregates use this field and are labelled **detected subset**;
+they are not population medians or evidence of a trend. Raw `value` remains
+available for audit but hidden in default semantic dimensions. Counts and
+non-detect shares include all result rows, separated by constituent definition.
+
+The host rejects unauthenticated requests and unauthorized tenant selections.
+A server-side demo identity registry defines entitlements; URL slugs never grant
+access. See [embed/README.md](embed/README.md) for session setup and limitations.

@@ -1,0 +1,123 @@
+{
+  "slug": "groundwater-bi",
+  "title": "Groundwater BI",
+  "kind": "harness",
+  "status": "working demo; Hex planned",
+  "strict_numbers": true,
+  "question": "Can the same public groundwater marts support consistent metrics and authenticated, watershed-scoped embedded analytics?",
+  "one_liner": "dbt and DuckDB marts, offline LookML validation, censoring-safe default metrics and a FastAPI host that authenticates demo identities before minting tenant-scoped embed URLs.",
+  "aim": "Keep metrics and authorization definitions reviewable in git and exercise the boundaries between a warehouse, a semantic layer and an embedded host application.",
+  "scope": "Committed public groundwater snapshot, dbt marts and tests, parsed LookML schema, synthetic consumer metric contracts, bearer authentication, signed host sessions and tenant authorization. Hex remains a planned app with tested SQL and setup notes.",
+  "conclusion": "The runnable warehouse and host demonstrate censoring-preserving rows, detected-subset concentration metrics and server-side tenant entitlements. Choosing another tenant slug does not grant access. Live Looker, a published Hex app and an exercised Metabase dashboard are not claimed.",
+  "ledger": {
+    "type": "none"
+  },
+  "headline": [
+    {
+      "label": "Results in committed snapshot",
+      "value": {
+        "source": "csv",
+        "path": "data/seed/wqp_samples.csv",
+        "column": "result_id",
+        "op": "count"
+      }
+    },
+    {
+      "label": "Non-detect result rows",
+      "value": {
+        "source": "csv",
+        "path": "data/seed/wqp_samples.csv",
+        "column": "result_id",
+        "op": "count",
+        "where": {
+          "censored": "True"
+        }
+      }
+    },
+    {
+      "label": "Warehouse models",
+      "value": {
+        "source": "count_files",
+        "glob": "warehouse/models/**/*.sql"
+      }
+    },
+    {
+      "label": "Top-level test definitions",
+      "value": {
+        "source": "regex_count",
+        "glob": "tests/test_*.py",
+        "pattern": "^def test_"
+      }
+    }
+  ],
+  "finding": [
+    "Default concentration measures use detected_value, which excludes non-detects and detected-but-not-quantified results. They are explicitly labelled detected subset and cannot substitute for a censoring-aware population median. True detections remain included when no reporting limit is supplied.",
+    "The host resolves authenticated identity and permitted tenants from a server-side demo registry. Anonymous requests, cross-tenant selections and tampered or expired host sessions are denied. Registry revocation prevents new embed tokens; already-issued tokens remain usable until expiry.",
+    "LookML is validated offline against the built schema. The future Hex app has a runnable SQL contract and setup notes; no published link, exported notebook or account integration is claimed."
+  ],
+  "traps": [
+    {
+      "id": "censoring",
+      "how": "Raw reported values remain audit fields; default aggregates use measured detections and display their selected-subset scope."
+    },
+    {
+      "id": "units-definitions",
+      "how": "Comparable constituent definitions include family, characteristic, fraction and unit; consumer queries group by those definitions."
+    },
+    {
+      "id": "join-fanout",
+      "how": "Fact keys and dimension relationships are validated by dbt; semantic joins are checked offline against available fields."
+    }
+  ],
+  "figures": [],
+  "not_claimed": [
+    "No live Looker validation, published Hex app or exercised Metabase dashboard.",
+    "The identity registry is a concrete demo, not a production identity provider.",
+    "Detected-subset medians are not population medians, remediation evidence or groundwater trend estimates."
+  ],
+  "documents": [
+    {
+      "title": "Architecture and metric contract",
+      "path": "README.md"
+    },
+    {
+      "title": "Authentication and embedding demo",
+      "path": "embed/README.md"
+    },
+    {
+      "title": "Planned Hex app and SQL",
+      "path": "hex/README.md"
+    },
+    {
+      "title": "Deployment opinion",
+      "path": "docs/deployment-opinion.md"
+    },
+    {
+      "title": "Data provenance",
+      "path": "data/seed/SOURCE.md"
+    }
+  ],
+  "verification": {
+    "tests": {
+      "source": "regex_count",
+      "glob": "tests/test_*.py",
+      "pattern": "^def test_"
+    },
+    "artifact": "reports/check-evidence.json"
+  },
+  "data": [
+    "Cleaned public-domain USGS groundwater results from the companion Groundwater Audit snapshot"
+  ],
+  "stack": [
+    "dbt",
+    "DuckDB",
+    "LookML",
+    "FastAPI",
+    "signed sessions",
+    "Metabase static embed protocol",
+    "planned Hex SQL"
+  ],
+  "links": {
+    "Repository": "https://github.com/ethannol/groundwater-bi"
+  }
+}
