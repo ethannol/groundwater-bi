@@ -35,13 +35,15 @@ def test_mart_and_consumer_metrics_exclude_limits_from_concentration_summary():
         + mart.replace("{{ ref('stg_samples') }}", "stg_samples")
     )
     con.execute(
-        "create table dim_constituent as select distinct constituent_key, 'arsenic' as family from fct_result"
+        """create table dim_constituent as select distinct constituent_key,
+           'arsenic' as family, 'Arsenic' as characteristic,
+           'Dissolved' as fraction, 'ug/L' as unit from fct_result"""
     )
     assert con.execute(
         "select detected_value from fct_result order by value"
     ).fetchall() == [(2.0,), (4.0,), (None,), (None,), (300.0,)]
     row = con.execute((ROOT / "hex/metrics.sql").read_text()).fetchone()
-    assert row == ("arsenic", 2020, 5, 1, 1, 0.2, 4.0)
+    assert row == ("arsenic", "Arsenic", "Dissolved", "ug/L", 2020, 5, 1, 1, 0.2, 4.0)
     # The LookML defaults use the same safe mart column, not raw value.
     view = lkml.load((ROOT / "looker/views/fct_result.view.lkml").read_text())["views"][
         0
@@ -75,15 +77,16 @@ def test_all_censored_group_has_no_detected_median():
     con.execute(
         "insert into fct_result values ('r1', 'w1', 'a', 2020, 1, null), ('r2', 'w2', 'a', 2020, 1, null)"
     )
-    con.execute("create table dim_constituent(constituent_key varchar, family varchar)")
-    con.execute("insert into dim_constituent values ('a', 'arsenic')")
-    assert con.execute((ROOT / "hex/metrics.sql").read_text()).fetchone() == (
-        "arsenic",
-        2020,
-        2,
-        2,
-        2,
-        1.0,
-        None,
-    )
+    con.execute("""create table dim_constituent(constituent_key varchar, family varchar,
+                   characteristic varchar, fraction varchar, unit varchar)""")
+    con.execute("""insert into dim_constituent values
+                   ('a', 'arsenic', 'Arsenic', 'Dissolved', 'ug/L'),
+                   ('a-total', 'arsenic', 'Arsenic', 'Total', 'ug/L')""")
+    # A detected total-fraction result must not supply a median for the
+    # all-censored dissolved group, even though their family/year match.
+    con.execute("insert into fct_result values ('r3', 'w3', 'a-total', 2020, 0, 99)")
+    assert con.execute((ROOT / "hex/metrics.sql").read_text()).fetchall() == [
+        ("arsenic", "Arsenic", "Dissolved", "ug/L", 2020, 2, 2, 2, 1.0, None),
+        ("arsenic", "Arsenic", "Total", "ug/L", 2020, 1, 1, 0, 0.0, 99.0),
+    ]
     con.close()
