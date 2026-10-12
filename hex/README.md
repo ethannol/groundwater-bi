@@ -1,8 +1,9 @@
 # Hex app
 
-The Hex side of the stack: a notebook that reads the marts, walks through the
-cohort-versus-pooled comparison and the censoring profile, and is published
-as an app with a constituent selector.
+**Status: planned.** No Hex notebook export or published app exists yet.
+The repository supplies a runnable SQL contract in [metrics.sql](metrics.sql)
+and build notes for a future app. Account provisioning, notebook creation and
+publication remain manual work; this is not a third validated consumer.
 
 ## Setup (Hex Community plan)
 
@@ -20,9 +21,11 @@ this order:
    and `family`, from `fct_result` joined to `dim_constituent`.
 2. SQL: the consistent cohort. Wells with a result in both the first and
    last three years of the record, for the selected family.
-3. Python: pooled median by year versus cohort median by year, on one chart,
-   with the non-detect share underneath. The difference between the two
-   lines is the sampling-composition effect the audit project describes.
+3. Start with the result/well counts, non-detect share and explicitly labelled
+   detected-subset median from `metrics.sql`. Never use `median(value)`:
+   non-detect values are reporting limits. A pooled/cohort concentration chart
+   requires a separate censoring-aware estimator and fixed well/period rules;
+   the SQL subset median alone cannot support it.
 4. An input parameter for `family` wired into the SQL cells, so the
    published app has one control.
 5. A short markdown cell stating what the comparison does and does not

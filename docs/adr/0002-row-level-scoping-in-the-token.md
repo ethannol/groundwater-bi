@@ -27,3 +27,11 @@ URL or the dashboard filters.
   self-serve exploration inside the product.
 - The tenant registry is a dict in the demo; in production it comes from
   the session store.
+
+## Demo enforcement (2026-10-12)
+
+The host now requires a configured demo bearer identity or signed HttpOnly host
+session. Entitlements are resolved from `DEMO_USERS_JSON` on every request;
+changing a tenant slug cannot mint a token outside those entitlements. Tests
+exercise anonymous denial, cross-tenant denial, expired/tampered sessions and
+registry revocation. Already-issued BI embed tokens remain valid until expiry.

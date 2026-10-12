@@ -42,6 +42,7 @@ view: fct_result {
   }
 
   dimension: value {
+    hidden: yes
     type: number
     description: "Reported value. For censored rows this is the detection limit, not a measurement."
     sql: ${TABLE}.value ;;
@@ -83,10 +84,16 @@ view: fct_result {
     sql: ${well_key} ;;
   }
 
-  measure: median_value {
+  dimension: detected_value {
+    type: number
+    description: "Measured detections only, excluding ND and DNQ. Detected results need no reporting limit. Not a censored-population estimate."
+    sql: ${TABLE}.detected_value ;;
+  }
+
+  measure: median_detected_value {
     type: median
-    label: "Median reported value"
-    sql: ${value} ;;
+    label: "Median detected concentration (detected subset)"
+    sql: ${detected_value} ;;
     value_format_name: decimal_2
   }
 

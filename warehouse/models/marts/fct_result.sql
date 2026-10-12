@@ -11,6 +11,10 @@ select
     cast(extract(year from sample_date) as integer)                as sample_year,
     method_id,
     value,
+    -- Safe default aggregates operate only on measured detections. This is
+    -- a selected detected subset, not a censoring-aware population median.
+    case when not is_censored and not is_dnq
+         then value end                                            as detected_value,
     lower_bound,
     upper_bound,
     detection_limit,
