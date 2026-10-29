@@ -9,6 +9,16 @@
   "aim": "Keep metrics and authorization definitions reviewable in git and exercise the boundaries between a warehouse, a semantic layer and an embedded host application.",
   "scope": "Committed public groundwater snapshot, dbt marts and tests, parsed LookML schema, synthetic consumer metric contracts, bearer authentication, signed host sessions and tenant authorization. Hex remains a planned app with tested SQL and setup notes.",
   "conclusion": "The runnable warehouse and host demonstrate censoring-preserving rows, detected-subset concentration metrics and server-side tenant entitlements. Choosing another tenant slug does not grant access. Live Looker, a published Hex app and an exercised Metabase dashboard are not claimed.",
+  "summary": {
+    "question": "Can metric definitions kept in git serve a modelled explore and a tenant-scoped embedded dashboard without a dashboard reporting a detection limit as a measurement?",
+    "techniques": [
+      "dbt models on DuckDB with key, relationship and censoring tests",
+      "LookML model validated offline against the built schema",
+      "FastAPI host that authenticates a demo identity before minting a tenant-locked embed URL",
+      "Non-detects kept as intervals; concentration metrics labelled as detected-subset values"
+    ],
+    "result": "Working from a fresh checkout, with no accounts: the warehouse and its tests, the offline LookML validation and the authenticated embed host. Planned only: a published Hex app, a live Looker instance and an exercised Metabase dashboard."
+  },
   "ledger": {
     "type": "none"
   },
